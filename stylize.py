@@ -69,8 +69,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
     # compute content features in feedforward mode
     g = tf.Graph()
-    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-        image = tf.placeholder('float', shape=shape)
+    with g.as_default(), g.device('/cpu:0'), tf.compat.v1.Session() as sess:
+        image = tf.compat.v1.placeholder('float', shape=shape)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
         content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
@@ -79,8 +79,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     # compute style features in feedforward mode
     for i in range(len(styles)):
         g = tf.Graph()
-        with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-            image = tf.placeholder('float', shape=style_shapes[i])
+        with g.as_default(), g.device('/cpu:0'), tf.compat.v1.Session() as sess:
+            image = tf.compat.v1.placeholder('float', shape=style_shapes[i])
             net = vgg.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
@@ -95,12 +95,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     with tf.Graph().as_default():
         if initial is None:
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = tf.random_normal(shape) * 0.256
+            initial = tf.compat.v1.random_normal(shape) * 0.256
         else:
             initial = np.array([vgg.preprocess(initial, vgg_mean_pixel)])
             initial = initial.astype('float32')
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
+            initial = (initial) * initial_content_noise_coeff + (tf.compat.v1.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
@@ -123,10 +123,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             style_losses = []
             for style_layer in STYLE_LAYERS:
                 layer = net[style_layer]
-                _, height, width, number = map(lambda i: i.value, layer.get_shape())
+                _, height, width, number = map(lambda i: i, layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
-                gram = tf.matmul(tf.transpose(feats), feats) / size
+                gram = tf.linalg.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
                 style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
@@ -162,13 +162,13 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                                   ('total', loss)])
 
         # optimizer setup
-        train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
+        train_step = tf.compat.v1.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         # optimization
         best_loss = float('inf')
         best = None
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
+        with tf.compat.v1.Session() as sess:
+            sess.run(tf.compat.v1.global_variables_initializer())
             print('Optimization started...')
             if (print_iterations and print_iterations != 0):
                 print_progress(get_loss_vals(loss_store))
@@ -246,7 +246,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
 def _tensor_size(tensor):
     from operator import mul
-    return reduce(mul, (d.value for d in tensor.get_shape()), 1)
+    return reduce(mul, (d for d in tensor.get_shape()), 1)
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])

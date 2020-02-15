@@ -9,6 +9,7 @@ from collections import OrderedDict
 from PIL import Image
 import numpy as np
 import scipy.misc
+import imageio
 
 from stylize import stylize
 
@@ -178,6 +179,8 @@ def main():
             style_scale = options.style_scales[i]
         style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
                 target_shape[1] / style_images[i].shape[1])
+        # style_images[i] = np.array(Image.fromarray(style_images[i]).resize(style_scale *
+        #         target_shape[1] / style_images[i].shape[1]))
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
@@ -271,7 +274,7 @@ def main():
 
 
 def imread(path):
-    img = scipy.misc.imread(path).astype(np.float)
+    img = imageio.imread(path).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
