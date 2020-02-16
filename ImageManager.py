@@ -4,8 +4,9 @@ import os
 
 class ImageManager:
     original_name = ""
-    style_name = ""
+    style_path = ""
     work_folder_path = ""
+    original_path = ""
     folder_name = ""
     save_path = ""
     split_num_vertical = 0
@@ -14,11 +15,15 @@ class ImageManager:
     crop_delta = 50
     alpha_delta = 50
 
-    def __init__(self, original_name, style_name, split_num_vertical, split_num_horizontal,
+    def __init__(self, original_path, style_path, split_num_vertical, split_num_horizontal,
                  iterations):
         self.work_folder_path = "Cash"
-        self.original_name = original_name
-        self.style_name = style_name
+        dir = os.path.join(self.work_folder_path)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        self.original_path = original_path
+        self.original_name = str(original_path).split('/')[-1]
+        self.style_path = style_path
         self.split_num_vertical = split_num_vertical
         self.split_num_horizontal = split_num_horizontal
         self.iterations = iterations
@@ -44,7 +49,7 @@ class ImageManager:
         cmd = ""
         cmd += "python neural_style.py"
         cmd += " --content " + path
-        cmd += " --styles " + self.work_folder_path + "/" + self.style_name
+        cmd += " --styles " + self.style_path
         cmd += " --output " + path
         cmd += " --iterations " + str(self.iterations)
         cmd += " --overwrite"
@@ -52,7 +57,7 @@ class ImageManager:
         os.system(cmd)
 
     def cut_vertical(self):
-        original = Image.open(self.work_folder_path + "/" + self.original_name)
+        original = Image.open(self.original_path)
         original = original.convert("RGBA")
         width, height = original.size
         split_dist = width / self.split_num_vertical
@@ -234,10 +239,3 @@ class ImageManager:
 if __name__ == '__main__':
     imageManager = ImageManager("1-content.jpg", "1-style.jpg", 4, 4, 300)
     imageManager.start()
-    # imageManager.concut()
-    # imageManager.cut()
-    # imageManager.add_alpha()
-
-    # os.system(
-    #     "python neural_style.py --content examples/1-content/1-content-3.png --styles examples/1-style.jpg --output examples/1-content/1-content-3.png --iterations 1 --overwrite")
-    # print("end")

@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 import vgg
-
+import Data
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
@@ -180,6 +180,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     elapsed = time.time() - start
                     # take average of last couple steps to get time per iteration
                     remaining = np.mean(iteration_times[-10:]) * (iterations - i)
+                    Data.save_bar_state(i + 1)
                     print('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
                         i + 1,
                         iterations,
