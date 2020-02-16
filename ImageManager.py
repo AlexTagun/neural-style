@@ -8,16 +8,19 @@ class ImageManager:
     work_folder_path = ""
     folder_name = ""
     save_path = ""
-    num_of_split = 0
+    split_num_vertical = 0
+    split_num_horizontal = 0
     iterations = 0
     crop_delta = 50
     alpha_delta = 50
 
-    def __init__(self, work_folder_path, original_name, style_name, num_of_split, iterations):
-        self.work_folder_path = work_folder_path
+    def __init__(self, original_name, style_name, split_num_vertical, split_num_horizontal,
+                 iterations):
+        self.work_folder_path = "Cash"
         self.original_name = original_name
         self.style_name = style_name
-        self.num_of_split = num_of_split
+        self.split_num_vertical = split_num_vertical
+        self.split_num_horizontal = split_num_horizontal
         self.iterations = iterations
         self.folder_name = self.original_name.split(".")[0]
         dir = os.path.join(self.work_folder_path, self.folder_name)
@@ -26,12 +29,16 @@ class ImageManager:
         self.save_path = self.work_folder_path + "/" + self.folder_name + "/"
 
     def start(self):
-        self.cut()
-        for i in range(0, self.num_of_split):
-            self.render(self.save_path + self.folder_name + "-" + str(i) + ".png")
-        self.add_alpha()
-        self.concut()
-
+        self.cut_vertical()
+        self.cut_horizontal()
+        for i in range(0, self.split_num_vertical):
+            for j in range(0, self.split_num_horizontal):
+                self.render(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                    i) + "_" + str(j) + ".png")
+        self.add_alpha_horizontal()
+        self.concut_horizontal()
+        self.add_alpha_vertical()
+        self.concut_vertical()
 
     def render(self, path):
         cmd = ""
@@ -44,52 +51,20 @@ class ImageManager:
         print(cmd)
         os.system(cmd)
 
-    def cut(self):
-
+    def cut_vertical(self):
         original = Image.open(self.work_folder_path + "/" + self.original_name)
         original = original.convert("RGBA")
         width, height = original.size
-        split_dist = width / self.num_of_split
-        for i in range(0, self.num_of_split):
+        split_dist = width / self.split_num_vertical
+        for i in range(0, self.split_num_vertical):
             x = split_dist * i
             y = 0
             w = split_dist + x
             h = height + y
-            cut_image = self.crop(original, x, y, w, h)
+            cut_image = self.crop_vertical(original, x, y, w, h)
             cut_image.save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
 
-    def concut(self):
-        images = []
-        width = 0
-        height = 0
-        for i in range(0, self.num_of_split):
-            images.append(Image.open(self.save_path + self.folder_name + "-" + str(i) + ".png"))
-            if i == 0:
-                width += images[i].size[0] - self.crop_delta
-            elif i == self.num_of_split - 1:
-                width += images[i].size[0] - self.crop_delta
-            else:
-                width += images[i].size[0] - 2 * self.crop_delta
-        height += images[0].size[1]
-        result_image = Image.new('RGBA', (width, height))
-
-        x = 0
-        for i in range(0, self.num_of_split):
-            if i == 0:
-                result_image.paste(images[i], (x, 0))
-                x += images[i].size[0] - self.crop_delta
-            elif i == self.num_of_split - 1:
-                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
-                x += images[i].size[0] - self.crop_delta
-            else:
-                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
-                x += images[i].size[0] - 2 * self.crop_delta
-            # result_image.paste(images[i], (x, 0))
-            # x += images[i].size[0]
-        result_image.putalpha(255)
-        result_image.save(self.save_path + "result.png", "PNG")
-
-    def crop(self, image, x, y, w, h):
+    def crop_vertical(self, image, x, y, w, h):
         delta = self.crop_delta
         x -= delta
         w += delta
@@ -98,14 +73,103 @@ class ImageManager:
         if (w > image_width): w = image_width
         return image.crop((x, y, w, h))
 
-    def add_alpha(self):
+    def cut_horizontal(self):
+        for i in range(0, self.split_num_vertical):
+            original = Image.open(self.save_path + self.folder_name + "-" + str(i) + ".png")
+            original = original.convert("RGBA")
+            width, height = original.size
+            split_dist = height / self.split_num_horizontal
+
+            dir = os.path.join(self.save_path, self.folder_name + "-" + str(i))
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+            for j in range(0, self.split_num_horizontal):
+                x = 0
+                y = split_dist * j
+                w = width + x
+                h = split_dist + y
+                cut_image = self.crop_horizontal(original, x, y, w, h)
+                cut_image.save(dir + "/" + self.folder_name + "-" + str(i) + "_" + str(j) + ".png", "PNG")
+
+    def crop_horizontal(self, image, x, y, w, h):
+        delta = self.crop_delta
+        y -= delta
+        h += delta
+        if (y < 0): y = 0
+        image_height = image.size[1]
+        if (h > image_height): h = image_height
+        return image.crop((x, y, w, h))
+
+    def concut_vertical(self):
+        images = []
+        width = 0
+        height = 0
+        for i in range(0, self.split_num_vertical):
+            images.append(Image.open(self.save_path + self.folder_name + "-" + str(i) + ".png"))
+            if i == 0:
+                width += images[i].size[0] - self.crop_delta
+            elif i == self.split_num_vertical - 1:
+                width += images[i].size[0] - self.crop_delta
+            else:
+                width += images[i].size[0] - 2 * self.crop_delta
+        height += images[0].size[1]
+        result_image = Image.new('RGBA', (width, height))
+
+        x = 0
+        for i in range(0, self.split_num_vertical):
+            if i == 0:
+                result_image.paste(images[i], (x, 0))
+                x += images[i].size[0] - self.crop_delta
+            elif i == self.split_num_vertical - 1:
+                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
+                x += images[i].size[0] - self.crop_delta
+            else:
+                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
+                x += images[i].size[0] - 2 * self.crop_delta
+        result_image.putalpha(255)
+        result_image.save(self.save_path + "result.png", "PNG")
+
+    def concut_horizontal(self):
+        for i in range(0, self.split_num_vertical):
+            images = []
+            width = 0
+            height = 0
+            for j in range(0, self.split_num_horizontal):
+                images.append(
+                    Image.open(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                        i) + "_" + str(j) + ".png"))
+                if j == 0:
+                    height += images[j].size[1] - self.crop_delta
+                elif j == self.split_num_vertical - 1:
+                    height += images[j].size[1] - self.crop_delta
+                else:
+                    height += images[j].size[1] - 2 * self.crop_delta
+            width += images[0].size[0]
+            result_image = Image.new('RGBA', (width, height))
+
+            y = 0
+            for j in range(0, self.split_num_horizontal):
+                if j == 0:
+                    result_image.paste(images[j], (0, y))
+                    y += images[j].size[1] - self.crop_delta
+                elif j == self.split_num_horizontal - 1:
+                    result_image.paste(images[j], (0, y - self.crop_delta), images[j])
+                    y += images[j].size[1] - self.crop_delta
+                else:
+                    result_image.paste(images[j], (0, y - self.crop_delta), images[j])
+                    y += images[j].size[1] - 2 * self.crop_delta
+            result_image.putalpha(255)
+            result_image.save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
+
+    def add_alpha_vertical(self):
         delta = self.alpha_delta
-        for i in range(0, self.num_of_split):
+        for i in range(0, self.split_num_vertical):
             image = Image.open(self.save_path + self.folder_name + "-" + str(i) + ".png")
             image = image.convert("RGBA")
             if (i == 0):
                 image = self.add_alpha_right(image, delta)
-            elif (i == self.num_of_split - 1):
+            elif (i == self.split_num_vertical - 1):
                 image = self.add_alpha_left(image, delta)
             else:
                 image = self.add_alpha_right(image, delta)
@@ -130,9 +194,45 @@ class ImageManager:
                 image.putpixel((x, y), (pixel[0], pixel[1], pixel[2], alpha))
         return image
 
+    def add_alpha_horizontal(self):
+        delta = self.alpha_delta
+        for i in range(0, self.split_num_vertical):
+            for j in range(0, self.split_num_vertical):
+                image = Image.open(
+                    self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                        i) + "_" + str(j) + ".png")
+                image = image.convert("RGBA")
+                if (j == 0):
+                    image = self.add_alpha_down(image, delta)
+                elif (j == self.split_num_horizontal - 1):
+                    image = self.add_alpha_up(image, delta)
+                else:
+                    image = self.add_alpha_down(image, delta)
+                    image = self.add_alpha_up(image, delta)
+                image.save(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                    i) + "_" + str(j) + ".png", "PNG")
+
+    def add_alpha_up(self, image, delta):
+        width, height = image.size
+        for y in range(delta):
+            alpha = int(y / delta * 255)
+            for x in range(width):
+                pixel = image.getpixel((x, y))
+                image.putpixel((x, y), (pixel[0], pixel[1], pixel[2], alpha))
+        return image
+
+    def add_alpha_down(self, image, delta):
+        width, height = image.size
+        for y in range(height - delta, height):
+            alpha = int((height - y) / delta * 255)
+            for x in range(width):
+                pixel = image.getpixel((x, y))
+                image.putpixel((x, y), (pixel[0], pixel[1], pixel[2], alpha))
+        return image
+
 
 if __name__ == '__main__':
-    imageManager = ImageManager("examples", "1-content.jpg", "1-style.jpg", 4, 300)
+    imageManager = ImageManager("1-content.jpg", "1-style.jpg", 4, 4, 300)
     imageManager.start()
     # imageManager.concut()
     # imageManager.cut()
