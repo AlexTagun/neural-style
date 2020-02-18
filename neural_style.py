@@ -139,15 +139,7 @@ def fmt_imsave(fmt, iteration):
         raise ValueError("illegal format string '{}'".format(fmt))
 
 
-def main():
-
-    # https://stackoverflow.com/a/42121886
-    key = 'TF_CPP_MIN_LOG_LEVEL'
-    if key not in os.environ:
-        os.environ[key] = '2'
-
-    parser = build_parser()
-    options = parser.parse_args()
+def stylyze(options):
 
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to "
@@ -289,4 +281,10 @@ def imsave(path, img):
     Image.fromarray(img).save(path, quality=95)
 
 if __name__ == '__main__':
-    main()
+    key = 'TF_CPP_MIN_LOG_LEVEL'
+    if key not in os.environ:
+        os.environ[key] = '2'
+
+    parser = build_parser()
+    shell_options = parser.parse_args()
+    stylyze(shell_options)

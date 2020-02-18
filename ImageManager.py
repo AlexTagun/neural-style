@@ -1,6 +1,7 @@
 from PIL import Image
 import os
 import Data
+import neural_style as Stylist
 
 
 class ImageManager:
@@ -50,15 +51,37 @@ class ImageManager:
         self.concut_vertical()
 
     def render(self, path):
-        cmd = ""
-        cmd += "python neural_style.py"
-        cmd += " --content " + path
-        cmd += " --styles " + self.style_path
-        cmd += " --output " + path
-        cmd += " --iterations " + str(self.iterations)
-        cmd += " --overwrite"
-        print(cmd)
-        os.system(cmd)
+        options = type('Anonymous options', (object,), {
+            "content": path,
+            "styles": [self.style_path],
+            "output": path,
+            "iterations": self.iterations,
+            "overwrite": True,
+
+            "network": 'imagenet-vgg-verydeep-19.mat',
+            "checkpoint_iterations": None,
+            "checkpoint_output": None,
+            "width": None,
+            "style_scales": None,
+            "style_blend_weights": None,
+            "initial": None,
+            "initial_noiseblend": None,
+            "preserve_colors": None,
+            "content_weight": 5e0,
+            "content_weight_blend": 1,
+            "style_weight": 5e2,
+            "style_layer_weight_exp": 1,
+            "tv_weight": 1e2,
+            "learning_rate": 1e1,
+            "beta1": 0.9,
+            "beta2": 0.999,
+            "epsilon": 1e-08,
+            "pooling": 'max',
+            "print_iterations": None,
+            "progress_plot": None,
+            "progress_write": None,
+        })()
+        Stylist.stylyze(options)
 
     def cut_vertical(self):
         original = Image.open(self.original_path)
@@ -241,5 +264,5 @@ class ImageManager:
 
 
 if __name__ == '__main__':
-    imageManager = ImageManager("1-content.jpg", "1-style.jpg", 4, 4, 300)
+    imageManager = ImageManager("examples/1-content.jpg", "examples/1-style.jpg", 4, 4, 10)
     imageManager.start()
