@@ -231,7 +231,7 @@ class ImageManager:
     def add_alpha_horizontal(self):
         delta = self.alpha_delta
         for i in range(0, self.split_num_vertical):
-            for j in range(0, self.split_num_vertical):
+            for j in range(0, self.split_num_horizontal):
                 image = Image.open(
                     self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                         i) + "_" + str(j) + ".png")
