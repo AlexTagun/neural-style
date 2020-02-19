@@ -1,9 +1,15 @@
-import PySimpleGUI as sg
-from ImageManager import ImageManager
-from threading import Thread
+import math
 import time
+from threading import Thread
+
+import PIL
+import PySimpleGUI as sg
+from PIL import Image
+
 import Data
-from Data import UserData
+from ImageManager import ImageManager
+
+MAX_RENDER_OUT_SIDE = 1280
 
 
 class Bar(Thread):
@@ -15,8 +21,8 @@ class Bar(Thread):
         self.is_running = False
         self.max_iterations = max_iterations
         self.max_step = max_step
-        print(max_step)
-        print(max_iterations)
+        print('Max step: ' + str(max_step))
+        print('Max iterations: ' + str(max_iterations))
 
     def run(self):
         self.is_running = True
@@ -52,46 +58,73 @@ class ImageRenderer(Thread):
         self.bar_thread.stop()
 
 
-# image_path = ""
-# style_path = ""
-# ver_split = ""
-# hor_split = ""
-# iterations = ""
+def count_splits(orig_w, orig_h, out_w):
+    ratio = orig_h / orig_w
+    out_h = out_width * ratio
+    return math.ceil(out_w / MAX_RENDER_OUT_SIDE), math.ceil(out_h / MAX_RENDER_OUT_SIDE)
+
+
 user_data = Data.get_user_data()
+
 image_path = user_data.image_path
 style_path = user_data.style_path
-ver_split = user_data.ver_split
-hor_split = user_data.hor_split
+out_width = user_data.width
 iterations = user_data.iterations
 
 sg.theme('Light Blue 2')
 
 layout = [
-    [sg.Text('image path', size=(10, 1)), sg.Input(image_path), sg.FileBrowse()],
-    [sg.Text('style path', size=(10, 1)), sg.Input(style_path), sg.FileBrowse()],
-    [sg.Text('ver_split', size=(10, 1)), sg.InputText(ver_split)],
-    [sg.Text('hor_split', size=(10, 1)), sg.InputText(hor_split)],
-    [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations)],
+    [sg.Text('image path', size=(10, 1)), sg.Input(image_path, key='image_path'), sg.FileBrowse()],
+    [sg.Text('style path', size=(10, 1)), sg.Input(style_path, key='style_path'), sg.FileBrowse()],
+    [sg.Text('width', size=(10, 1)), sg.InputText(out_width, key='width')],
+    [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations, key='iterations')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
     [sg.Text('...', size=(45, 1), justification='center', key='log')],
-    [sg.Button('Render', focus=True)]]
+    [sg.Button('Start', focus=True)]]
 
 window = sg.Window('Стилизатор 30000', layout)
 
 if __name__ == "__main__":
-    # bar = None
+    bar = None
     while True:
-        event, values = window.read(timeout=10)
-        if event in (None, 'Quit'):
-            bar.stop()
+        event, values = window.read(timeout=100)
+        if event is None:
+            if bar is not None:
+                bar.stop()
             break
-        elif event == 'Render':
-            Data.save_user_data(values[0], values[1], values[2], values[3], values[4])
-            # print(int(values[2]) * int(values[3]) * int(values[4]))
-            bar = Bar(window['progbar'], window['log'], int(values[4]),
-                      int(values[2]) * int(values[3]))
-            imageRenderer = ImageRenderer(bar, str(values[0]), str(values[1]),
-                                          int(values[2]), int(values[3]), int(values[4]))
+        elif event == 'Start':
+            image_path = values['image_path']
+            style_path = values['style_path']
+
+            try:
+                image = Image.open(image_path)
+                style = Image.open(style_path)
+            except FileNotFoundError as e:
+                print('Image and style files should exist')
+                continue
+            except PIL.UnidentifiedImageError as e:
+                print('Image and style should be images')
+                continue
+
+            out_width_str = values['width']
+            iterations_str = values['iterations']
+            out_width = int(out_width_str)
+            iterations = int(iterations_str)
+
+            Data.save_user_data(image_path, style_path, out_width, iterations)
+
+            image_w, image_h = image.size
+            vertical_pieces_count, horizontal_pieces_count = count_splits(image_w, image_h, out_width)
+
+            bar = Bar(window['progbar'], window['log'], iterations, vertical_pieces_count * horizontal_pieces_count)
+            imageRenderer = ImageRenderer(
+                bar,
+                image_path,
+                style_path,
+                vertical_pieces_count,
+                horizontal_pieces_count,
+                iterations
+            )
 
             Data.save_iteration(0)
             Data.save_step(0)
@@ -100,5 +133,4 @@ if __name__ == "__main__":
             bar.start()
             imageRenderer.start()
 
-        # All done!
         # sg.popup_ok('Done')

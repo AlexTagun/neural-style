@@ -1,18 +1,17 @@
 # Copyright (c) 2015-2019 Anish Athalye. Released under GPLv3.
 
-import os
 import math
+import os
 import re
 from argparse import ArgumentParser
 from collections import OrderedDict
 
-from PIL import Image
+import imageio
 import numpy as np
 import scipy.misc
-import imageio
+from PIL import Image
 
 from stylize import stylize
-
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -279,6 +278,7 @@ def imread(path):
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
     Image.fromarray(img).save(path, quality=95)
+
 
 if __name__ == '__main__':
     key = 'TF_CPP_MIN_LOG_LEVEL'
