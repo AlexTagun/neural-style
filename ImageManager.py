@@ -44,8 +44,6 @@ class ImageManager:
         for i in range(0, self.split_num_vertical):
             for j in range(0, self.split_num_horizontal):
                 Data.save_step(Data.get_step() + 1)
-                Data.save_iteration(1)
-                Data.save_log("...")
                 self.render(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                     i) + "_" + str(j) + ".png", self.callback)
         self.add_alpha_horizontal()

@@ -16,7 +16,6 @@ MAX_RENDER_OUT_SIDE = 1280
 
 class Progress:
     def __init__(self, bar, log_text, max_iterations, max_step):
-        # Thread.__init__(self)
         self.name = "Loader"
         self.bar = bar
         self.log_text = log_text
@@ -26,27 +25,10 @@ class Progress:
         print('Max step: ' + str(max_step))
         print('Max iterations: ' + str(max_iterations))
 
-    # def run(self):
-    #     self.is_running = True
-    #     while self.is_running:
-    #         value = int(((Data.get_step() - 1) * self.max_iterations + Data.get_iteration()) * 1000 / (
-    #             self.max_iterations * self.max_step))
-    #         self.bar.update_bar(value)
-    #         # print(str(Data.get_log()))
-    #         log = "..."
-    #         try:
-    #             log = "Step " + str(Data.get_step()) + "/" + str(self.max_step) + " " + Data.get_log()
-    #             print(log)
-    #         except:
-    #             log = "..."
-    #         self.log_text.update(log)
-    #         time.sleep(1)
-
     def update(self, iteration, log_text):
         value = int(((Data.get_step() - 1) * self.max_iterations + iteration) * 1000 / (
             self.max_iterations * self.max_step))
         self.bar.update_bar(value)
-        # print(str(Data.get_log()))
         log = "..."
         try:
             log = "Step " + str(Data.get_step()) + "/" + str(self.max_step) + " " + log_text
@@ -54,7 +36,6 @@ class Progress:
         except:
             log = "..."
         self.log_text.update(log)
-        # print("callback: " + log_text)
 
     def stop(self):
         self.is_running = False
@@ -67,11 +48,9 @@ class ImageRendererThread(Thread):
         self.name = "ImageRenderer"
         self.imageManager = ImageManager(original_path, style_path, split_num_vertical, split_num_horizontal,
                                          iterations, callback)
-        # self.bar_thread = progress_thread
 
     def run(self):
         self.imageManager.start()
-        # self.bar_thread.stop()
 
     def raise_exc(self, exception):
         assert self.isAlive(), "thread must be started"
@@ -133,8 +112,6 @@ if __name__ == "__main__":
     while True:
         event, values = window.read(timeout=100)
         if event is None:
-            # if progress is not None:
-            #     progress.stop()
             if imageRenderer is not None:
                 imageRenderer.terminate()
             break
@@ -172,11 +149,6 @@ if __name__ == "__main__":
                 progress.update
             )
 
-            Data.save_iteration(0)
             Data.save_step(0)
-            Data.save_log("...")
 
-            # progress.start()
             imageRenderer.start()
-
-        # sg.popup_ok('Done')

@@ -9,32 +9,10 @@ class UserData:
         self.iterations = iterations
 
 
-def get_iteration():
-    with open("iteration.txt", "r") as inp:
-        for line in inp:
-            return int(line)
-
-
-def save_iteration(value):
-    with open("iteration.txt", "w") as document1:
-        document1.writelines(str(value))
-
-
 def get_step():
     with open("step.txt", "r") as inp:
         for line in inp:
             return int(line)
-
-
-def save_log(value):
-    with open("log.txt", "w") as document1:
-        document1.writelines(str(value))
-
-
-def get_log():
-    with open("log.txt", "r") as inp:
-        for line in inp:
-            return line
 
 
 def save_step(value):

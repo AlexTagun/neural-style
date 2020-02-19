@@ -180,13 +180,6 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     elapsed = time.time() - start
                     # take average of last couple steps to get time per iteration
                     remaining = np.mean(iteration_times[-10:]) * (iterations - i)
-                    Data.save_iteration(i + 1)
-                    Data.save_log('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
-                        i + 1,
-                        iterations,
-                        hms(elapsed),
-                        hms(remaining)
-                    ))
                     callback(i + 1, 'Iteration %4d/%4d (%s elapsed, %s remaining)' % (
                         i + 1,
                         iterations,
