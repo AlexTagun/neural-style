@@ -1,4 +1,6 @@
+import ctypes
 import math
+import threading
 import time
 from threading import Thread
 
@@ -12,7 +14,7 @@ from ImageManager import ImageManager
 MAX_RENDER_OUT_SIDE = 1280
 
 
-class Bar(Thread):
+class ProgressThread(Thread):
     def __init__(self, bar, log_text, max_iterations, max_step):
         Thread.__init__(self)
         self.name = "Loader"
@@ -44,18 +46,42 @@ class Bar(Thread):
         self.is_running = False
 
 
-class ImageRenderer(Thread):
-    def __init__(self, bar_thread, original_path, style_path, split_num_vertical, split_num_horizontal,
+class ImageRendererThread(Thread):
+    def __init__(self, progress_thread, original_path, style_path, split_num_vertical, split_num_horizontal,
                  iterations):
         Thread.__init__(self)
         self.name = "ImageRenderer"
         self.imageManager = ImageManager(original_path, style_path, split_num_vertical, split_num_horizontal,
                                          iterations)
-        self.bar_thread = bar_thread
+        self.bar_thread = progress_thread
 
     def run(self):
         self.imageManager.start()
         self.bar_thread.stop()
+
+    def raise_exc(self, exception):
+        assert self.isAlive(), "thread must be started"
+        for tid, tobj in threading._active.items():
+            if tobj is self:
+                res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(tid), ctypes.py_object(exception))
+                if res == 0:
+                    print("nonexistent thread id, trying x32 case")
+
+                    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exception))
+                    if res == 0:
+                        print("still nonexistent thread id")
+                    elif res > 1:
+                        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, 0)
+                        print("PyThreadState_SetAsyncExc failed")
+                elif res > 1:
+                    # """if it returns a number greater than one, you're in trouble,
+                    # and you should call it again with exc=NULL to revert the effect"""
+                    ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(tid), 0)
+                    print("PyThreadState_SetAsyncExc failed")
+                return
+
+    def terminate(self):
+        self.raise_exc(SystemExit)
 
 
 def count_splits(orig_w, orig_h, out_w):
@@ -85,12 +111,15 @@ layout = [
 window = sg.Window('Стилизатор 30000', layout)
 
 if __name__ == "__main__":
-    bar = None
+    progress = None
+    imageRenderer = None
     while True:
         event, values = window.read(timeout=100)
         if event is None:
-            if bar is not None:
-                bar.stop()
+            if progress is not None:
+                progress.stop()
+            if imageRenderer is not None:
+                imageRenderer.terminate()
             break
         elif event == 'Start':
             image_path = values['image_path']
@@ -116,9 +145,9 @@ if __name__ == "__main__":
             image_w, image_h = image.size
             vertical_pieces_count, horizontal_pieces_count = count_splits(image_w, image_h, out_width)
 
-            bar = Bar(window['progbar'], window['log'], iterations, vertical_pieces_count * horizontal_pieces_count)
-            imageRenderer = ImageRenderer(
-                bar,
+            progress = ProgressThread(window['progbar'], window['log'], iterations, vertical_pieces_count * horizontal_pieces_count)
+            imageRenderer = ImageRendererThread(
+                progress,
                 image_path,
                 style_path,
                 vertical_pieces_count,
@@ -130,7 +159,7 @@ if __name__ == "__main__":
             Data.save_step(0)
             Data.save_log("...")
 
-            bar.start()
+            progress.start()
             imageRenderer.start()
 
         # sg.popup_ok('Done')

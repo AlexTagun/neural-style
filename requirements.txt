@@ -1,3 +1,4 @@
+PySimpleGUI
 numpy
 Pillow  # provides PIL
 scipy==1.1
