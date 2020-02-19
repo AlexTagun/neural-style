@@ -20,7 +20,7 @@ class ImageManager:
     alpha_delta = 50
 
     def __init__(self, original_path, style_path, split_num_vertical, split_num_horizontal,
-                 iterations):
+                 iterations, callback):
         self.work_folder_path = "Cash"
         dir = os.path.join(self.work_folder_path)
         if not os.path.exists(dir):
@@ -36,6 +36,7 @@ class ImageManager:
         if not os.path.exists(dir):
             os.mkdir(dir)
         self.save_path = self.work_folder_path + "/" + self.folder_name + "/"
+        self.callback = callback
 
     def start(self):
         self.cut_vertical()
@@ -46,13 +47,13 @@ class ImageManager:
                 Data.save_iteration(1)
                 Data.save_log("...")
                 self.render(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                    i) + "_" + str(j) + ".png")
+                    i) + "_" + str(j) + ".png", self.callback)
         self.add_alpha_horizontal()
         self.concut_horizontal()
         self.add_alpha_vertical()
         self.concut_vertical()
 
-    def render(self, path):
+    def render(self, path, callback):
         options = type('Anonymous options', (object,), {
             "content": path,
             "styles": [self.style_path],
@@ -83,7 +84,7 @@ class ImageManager:
             "progress_plot": None,
             "progress_write": None,
         })()
-        Stylist.stylyze(options)
+        Stylist.stylyze(options, callback=callback)
 
     def cut_vertical(self):
         original = Image.open(self.original_path)

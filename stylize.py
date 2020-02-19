@@ -33,7 +33,7 @@ def print_progress(loss_vals):
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon, pooling,
-        print_iterations=None, checkpoint_iterations=None):
+        print_iterations=None, checkpoint_iterations=None, callback=None):
     """
     Stylize images.
 
@@ -187,12 +187,18 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         hms(elapsed),
                         hms(remaining)
                     ))
-                    print('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
+                    callback(i + 1, 'Iteration %4d/%4d (%s elapsed, %s remaining)' % (
                         i + 1,
                         iterations,
                         hms(elapsed),
                         hms(remaining)
                     ))
+                    # print('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
+                    #     i + 1,
+                    #     iterations,
+                    #     hms(elapsed),
+                    #     hms(remaining)
+                    # ))
                 else:
                     print('Iteration %4d/%4d' % (i + 1, iterations))
                 train_step.run()

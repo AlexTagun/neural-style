@@ -138,7 +138,7 @@ def fmt_imsave(fmt, iteration):
         raise ValueError("illegal format string '{}'".format(fmt))
 
 
-def stylyze(options):
+def stylyze(options, callback):
 
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to "
@@ -228,6 +228,7 @@ def stylyze(options):
         pooling=options.pooling,
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations,
+        callback=callback
     ):
         if (image is not None) and (options.checkpoint_output is not None):
             imsave(fmt_imsave(options.checkpoint_output, iteration), image)
