@@ -1,5 +1,7 @@
-from PIL import Image
 import os
+
+from PIL import Image
+
 import Data
 import neural_style as Stylist
 
@@ -65,7 +67,7 @@ class ImageManager:
             "style_scales": None,
             "style_blend_weights": None,
             "initial": None,
-            "initial_noiseblend": None,
+            "initial_noiseblend": 0,
             "preserve_colors": None,
             "content_weight": 5e0,
             "content_weight_blend": 1,
