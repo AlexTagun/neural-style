@@ -140,6 +140,14 @@ def fmt_imsave(fmt, iteration):
 
 def stylyze(options, callback):
 
+    parser = build_parser()
+    if options is None:
+        key = 'TF_CPP_MIN_LOG_LEVEL'
+        if key not in os.environ:
+            os.environ[key] = '2'
+
+        options = parser.parse_args()
+
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to "
                      "download it?)" % options.network)
@@ -282,10 +290,4 @@ def imsave(path, img):
 
 
 if __name__ == '__main__':
-    key = 'TF_CPP_MIN_LOG_LEVEL'
-    if key not in os.environ:
-        os.environ[key] = '2'
-
-    parser = build_parser()
-    shell_options = parser.parse_args()
-    stylyze(shell_options)
+    stylyze(None, {})

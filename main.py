@@ -1,7 +1,6 @@
 import ctypes
 import math
 import threading
-import time
 from threading import Thread
 
 import PIL
@@ -107,7 +106,6 @@ window = sg.Window('Стилизатор 30000', layout)
 
 
 if __name__ == "__main__":
-    progress = None
     imageRenderer = None
     while True:
         event, values = window.read(timeout=100)
