@@ -45,8 +45,14 @@ class ImageRendererThread(Thread):
                  iterations, callback):
         Thread.__init__(self)
         self.name = "ImageRenderer"
-        self.imageManager = ImageManager(original_path, style_path, split_num_vertical, split_num_horizontal,
-                                         iterations, callback)
+        self.imageManager = ImageManager(
+            original_path,
+            style_path,
+            vertical_pieces_count,
+            horizontal_pieces_count,
+            iterations,
+            callback
+        )
 
     def run(self):
         self.imageManager.start()
@@ -102,7 +108,6 @@ layout = [
     [sg.Button('Start', focus=True)]]
 
 window = sg.Window('Стилизатор 30000', layout)
-
 
 
 if __name__ == "__main__":
