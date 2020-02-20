@@ -39,6 +39,7 @@ class ImageManager:
         self.callback = callback
 
     def start(self):
+        # shutil.rmtree(self.save_path)
         self.cut_vertical()
         self.cut_horizontal()
         for i in range(0, self.vertical_pieces_count):
@@ -50,6 +51,8 @@ class ImageManager:
         self.concat_horizontal()
         self.add_alpha_vertical()
         self.concat_vertical()
+        # shutil.rmtree(self.save_path)
+
 
     def render(self, path, callback):
         options = type('Anonymous options', (object,), {
@@ -186,7 +189,7 @@ class ImageManager:
                         i) + "_" + str(j) + ".png"))
                 if j == 0:
                     height += images[j].size[1] - self.crop_delta
-                elif j == self.vertical_pieces_count - 1:
+                elif j == self.horizontal_pieces_count - 1:
                     height += images[j].size[1] - self.crop_delta
                 else:
                     height += images[j].size[1] - 2 * self.crop_delta
@@ -195,14 +198,10 @@ class ImageManager:
 
             y = 0
             for j in range(0, self.horizontal_pieces_count):
-                if j == 0:
-                    result_image.paste(images[j], (0, y))
-                    y += images[j].size[1] - self.crop_delta
-                elif j == self.horizontal_pieces_count - 1:
-                    result_image.paste(images[j], (0, y - self.crop_delta), images[j])
-                    y += images[j].size[1] - self.crop_delta
+                if j == self.horizontal_pieces_count - 1:
+                    result_image.paste(images[j], (0, y), images[j])
                 else:
-                    result_image.paste(images[j], (0, y - self.crop_delta), images[j])
+                    result_image.paste(images[j], (0, y), images[j])
                     y += images[j].size[1] - 2 * self.crop_delta
             result_image.putalpha(255)
             result_image.save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
