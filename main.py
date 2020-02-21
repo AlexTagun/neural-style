@@ -41,8 +41,8 @@ class Progress:
 
 
 class ImageRendererThread(Thread):
-    def __init__(self, original_path, style_path, split_num_vertical, split_num_horizontal,
-                 iterations, callback):
+    def __init__(self, original_path, style_path, vertical_pieces_count, horizontal_pieces_count,
+                 iterations, out_width, callback):
         Thread.__init__(self)
         self.name = "ImageRenderer"
         self.imageManager = ImageManager(
@@ -51,6 +51,7 @@ class ImageRendererThread(Thread):
             vertical_pieces_count,
             horizontal_pieces_count,
             iterations,
+            out_width,
             callback
         )
 
@@ -149,6 +150,7 @@ if __name__ == "__main__":
                 vertical_pieces_count,
                 horizontal_pieces_count,
                 iterations,
+                out_width,
                 progress.update
             )
 

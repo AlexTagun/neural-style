@@ -17,10 +17,9 @@ class ImageManager:
     horizontal_pieces_count = 0
     iterations = 0
     crop_delta = 50
-    alpha_delta = 50
 
     def __init__(self, original_path, style_path, vertical_pieces_count, horizontal_pieces_count,
-                 iterations, callback):
+                 iterations, out_width, callback):
         self.work_folder_path = "Cash"
         dir = os.path.join(self.work_folder_path)
         if not os.path.exists(dir):
@@ -37,6 +36,11 @@ class ImageManager:
             os.mkdir(dir)
         self.save_path = self.work_folder_path + "/" + self.folder_name + "/"
         self.callback = callback
+        self.out_width = out_width
+
+        image_w = Image.open(self.original_path).size[0]
+        self.scale_factor = out_width / image_w
+        self.alpha_delta = round(self.crop_delta * self.scale_factor)
 
     def start(self):
         # shutil.rmtree(self.save_path)
@@ -44,9 +48,13 @@ class ImageManager:
         self.cut_horizontal()
         for i in range(0, self.vertical_pieces_count):
             for j in range(0, self.horizontal_pieces_count):
+                path = self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                    i) + "_" + str(j) + ".png"
+                width = Image.open(path).size[0]
+                out_w = round(width * self.scale_factor)
+
                 Data.save_step(Data.get_step() + 1)
-                self.render(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                    i) + "_" + str(j) + ".png", self.callback)
+                self.render(path, out_w, self.callback)
         self.add_alpha_horizontal()
         self.concat_horizontal()
         self.add_alpha_vertical()
@@ -54,7 +62,7 @@ class ImageManager:
         # shutil.rmtree(self.save_path)
 
 
-    def render(self, path, callback):
+    def render(self, path, width, callback):
         options = type('Anonymous options', (object,), {
             "content": path,
             "styles": [self.style_path],
@@ -65,7 +73,7 @@ class ImageManager:
             "network": 'imagenet-vgg-verydeep-19.mat',
             "checkpoint_iterations": None,
             "checkpoint_output": None,
-            "width": None,
+            "width": width,
             "style_scales": None,
             "style_blend_weights": None,
             "initial": None,
@@ -143,17 +151,18 @@ class ImageManager:
                 .save(self.save_path + "result.png", "PNG")
             return
 
+        delta = self.alpha_delta
         images = []
         width = 0
         height = 0
         for i in range(0, self.vertical_pieces_count):
             images.append(Image.open(self.save_path + self.folder_name + "-" + str(i) + ".png"))
             if i == 0:
-                width += images[i].size[0] - self.crop_delta
+                width += images[i].size[0] - delta
             elif i == self.vertical_pieces_count - 1:
-                width += images[i].size[0] - self.crop_delta
+                width += images[i].size[0] - delta
             else:
-                width += images[i].size[0] - 2 * self.crop_delta
+                width += images[i].size[0] - 2 * delta
         height += images[0].size[1]
         result_image = Image.new('RGBA', (width, height))
 
@@ -161,13 +170,13 @@ class ImageManager:
         for i in range(0, self.vertical_pieces_count):
             if i == 0:
                 result_image.paste(images[i], (x, 0))
-                x += images[i].size[0] - self.crop_delta
+                x += images[i].size[0] - delta
             elif i == self.vertical_pieces_count - 1:
-                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
-                x += images[i].size[0] - self.crop_delta
+                result_image.paste(images[i], (x - delta, 0), images[i])
+                x += images[i].size[0] - delta
             else:
-                result_image.paste(images[i], (x - self.crop_delta, 0), images[i])
-                x += images[i].size[0] - 2 * self.crop_delta
+                result_image.paste(images[i], (x - delta, 0), images[i])
+                x += images[i].size[0] - 2 * delta
         result_image.putalpha(255)
         result_image.save(self.save_path + "result.png", "PNG")
 
@@ -180,6 +189,7 @@ class ImageManager:
                     .save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
                 continue
 
+            delta = self.alpha_delta
             images = []
             width = 0
             height = 0
@@ -188,11 +198,11 @@ class ImageManager:
                     Image.open(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                         i) + "_" + str(j) + ".png"))
                 if j == 0:
-                    height += images[j].size[1] - self.crop_delta
+                    height += images[j].size[1] - delta
                 elif j == self.horizontal_pieces_count - 1:
-                    height += images[j].size[1] - self.crop_delta
+                    height += images[j].size[1] - delta
                 else:
-                    height += images[j].size[1] - 2 * self.crop_delta
+                    height += images[j].size[1] - 2 * delta
             width += images[0].size[0]
             result_image = Image.new('RGBA', (width, height))
 
@@ -202,7 +212,7 @@ class ImageManager:
                     result_image.paste(images[j], (0, y), images[j])
                 else:
                     result_image.paste(images[j], (0, y), images[j])
-                    y += images[j].size[1] - 2 * self.crop_delta
+                    y += images[j].size[1] - 2 * delta
             result_image.putalpha(255)
             result_image.save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
 
