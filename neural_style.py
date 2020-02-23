@@ -1,5 +1,6 @@
 # Copyright (c) 2015-2019 Anish Athalye. Released under GPLv3.
 
+import os
 import math
 import os
 import re
@@ -12,6 +13,7 @@ import scipy.misc
 from PIL import Image
 
 from stylize import stylize
+
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -178,8 +180,6 @@ def stylyze(options, callback):
             style_scale = options.style_scales[i]
         style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
                 target_shape[1] / style_images[i].shape[1])
-        # style_images[i] = np.array(Image.fromarray(style_images[i]).resize(style_scale *
-        #         target_shape[1] / style_images[i].shape[1]))
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
@@ -274,7 +274,7 @@ def stylyze(options, callback):
 
 
 def imread(path):
-    img = imageio.imread(path).astype(np.float)
+    img = scipy.misc.imread(path).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
