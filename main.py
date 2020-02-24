@@ -10,7 +10,7 @@ from PIL import Image
 import Data
 from ImageManager import ImageManager
 
-MAX_RENDER_OUT_SIDE = 1280
+MAX_RENDER_OUT_SIDE = 400
 
 
 class Progress:
@@ -90,7 +90,7 @@ def count_splits(orig_w, orig_h, out_w):
     max_side_without_delta = MAX_RENDER_OUT_SIDE - ImageManager.crop_delta * scale_factor * 2
     print("Resulting max side including delta: " + str(max_side_without_delta))
     if max_side_without_delta < 0:
-        raise BaseException("Too big scale with too small max side")
+        raise ValueError("Too big scale with too small max side")
     return math.ceil(out_w / max_side_without_delta), math.ceil(out_h / max_side_without_delta)
 
 
@@ -145,7 +145,11 @@ if __name__ == "__main__":
             Data.save_user_data(image_path, style_path, out_width, iterations)
 
             image_w, image_h = image.size
-            vertical_pieces_count, horizontal_pieces_count = count_splits(image_w, image_h, out_width)
+            try:
+                vertical_pieces_count, horizontal_pieces_count = count_splits(image_w, image_h, out_width)
+            except ValueError as e:
+                window['log'].update(e.args[0])
+                continue
 
             progress = Progress(window['progbar'], window['log'], iterations, vertical_pieces_count * horizontal_pieces_count)
             imageRenderer = ImageRendererThread(
