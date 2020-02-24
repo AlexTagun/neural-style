@@ -10,7 +10,7 @@ from PIL import Image
 import Data
 from ImageManager import ImageManager
 
-MAX_RENDER_OUT_SIDE = 1280
+MAX_RENDER_OUT_SIDE = 800
 
 
 class Progress:
