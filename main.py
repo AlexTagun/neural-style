@@ -10,7 +10,7 @@ from PIL import Image
 import Data
 from ImageManager import ImageManager
 
-MAX_RENDER_OUT_SIDE = 800
+MAX_RENDER_OUT_SIDE = 400
 
 
 class Progress:
@@ -86,6 +86,7 @@ class ImageRendererThread(Thread):
 
 
 def count_splits(orig_w, orig_h, out_w):
+
     ratio = orig_h / orig_w
     out_h = out_width * ratio
     return math.ceil(out_w / MAX_RENDER_OUT_SIDE), math.ceil(out_h / MAX_RENDER_OUT_SIDE)
@@ -108,7 +109,7 @@ layout = [
     [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations, key='iterations')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
     [sg.Text('...', size=(59, 2), justification='left', key='log')],
-    [sg.Button('Start', focus=True)]]
+    [sg.Button('Start', focus=True), sg.Button('Continue', focus=False, visible=True, key='continue')]]
 
 window = sg.Window('Стилизатор 30000', layout)
 
