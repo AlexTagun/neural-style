@@ -30,7 +30,9 @@ class Progress:
         self.bar.update_bar(value)
         log = "..."
         try:
-            log = "Step " + str(Data.get_step()) + "/" + str(self.max_step) + " " + log_text
+            text = log_text.split('(')
+            log = "Step " + str(Data.get_step()) + "/" + str(self.max_step) + " " + text[0] + "\n" + \
+                  "(" + text[1]
             print(log)
         except:
             log = "..."
@@ -105,7 +107,7 @@ layout = [
     [sg.Text('width', size=(10, 1)), sg.InputText(out_width, key='width')],
     [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations, key='iterations')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
-    [sg.Text('...', size=(45, 1), justification='center', key='log')],
+    [sg.Text('...', size=(59, 2), justification='left', key='log')],
     [sg.Button('Start', focus=True)]]
 
 window = sg.Window('Стилизатор 30000', layout)
