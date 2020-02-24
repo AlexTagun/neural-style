@@ -50,11 +50,13 @@ class ImageManager:
             for j in range(0, self.horizontal_pieces_count):
                 path = self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                     i) + "_" + str(j) + ".png"
+                output_path = self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
+                    i) + "_" + str(j) + "_rendered.png"
                 width = Image.open(path).size[0]
                 out_w = round(width * self.scale_factor)
 
                 Data.save_step(Data.get_step() + 1)
-                self.render(path, out_w, self.callback)
+                self.render(path, output_path, out_w, self.callback)
         self.add_alpha_horizontal()
         self.concat_horizontal()
         self.add_alpha_vertical()
@@ -62,11 +64,11 @@ class ImageManager:
         # shutil.rmtree(self.save_path)
 
 
-    def render(self, path, width, callback):
+    def render(self, path, output_path, width, callback):
         options = type('Anonymous options', (object,), {
             "content": path,
             "styles": [self.style_path],
-            "output": path,
+            "output": output_path,
             "iterations": self.iterations,
             "overwrite": True,
 
@@ -185,7 +187,7 @@ class ImageManager:
 
             if self.horizontal_pieces_count == 1:
                 Image.open(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                        i) + "_0.png") \
+                        i) + "_0_rendered.png") \
                     .save(self.save_path + self.folder_name + "-" + str(i) + ".png", "PNG")
                 continue
 
@@ -196,7 +198,7 @@ class ImageManager:
             for j in range(0, self.horizontal_pieces_count):
                 images.append(
                     Image.open(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                        i) + "_" + str(j) + ".png"))
+                        i) + "_" + str(j) + "_rendered.png"))
                 if j == 0:
                     height += images[j].size[1] - delta
                 elif j == self.horizontal_pieces_count - 1:
@@ -261,7 +263,7 @@ class ImageManager:
 
                 image = Image.open(
                     self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                        i) + "_" + str(j) + ".png")
+                        i) + "_" + str(j) + "_rendered.png")
                 image = image.convert("RGBA")
 
                 if j == 0:
@@ -272,7 +274,7 @@ class ImageManager:
                     image = self.add_alpha_down(image, delta)
                     image = self.add_alpha_up(image, delta)
                 image.save(self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
-                    i) + "_" + str(j) + ".png", "PNG")
+                    i) + "_" + str(j) + "_rendered.png", "PNG")
 
     def add_alpha_up(self, image, delta):
         width, height = image.size
