@@ -5,6 +5,7 @@ from PIL import Image
 import Data
 import neural_style as Stylist
 
+MAX_RENDER_OUT_SIDE = 400
 
 class ImageManager:
     original_name = ""
@@ -38,8 +39,7 @@ class ImageManager:
         self.callback = callback
         self.out_width = out_width
 
-        image_w = Image.open(self.original_path).size[0]
-        self.scale_factor = out_width / image_w
+        self.scale_factor = self.calculate_scale_factor(self.original_path, self.vertical_pieces_count, self.horizontal_pieces_count, self.crop_delta)
         self.alpha_delta = round(self.crop_delta * self.scale_factor)
 
     def start(self):
@@ -293,6 +293,14 @@ class ImageManager:
                 pixel = image.getpixel((x, y))
                 image.putpixel((x, y), (pixel[0], pixel[1], pixel[2], alpha))
         return image
+
+    def calculate_scale_factor(self, original_path, vertical_pieces_count, horizontal_pieces_count, crop_delta):
+        image_w = Image.open(original_path).size[0]
+        image_h = Image.open(original_path).size[1]
+        if (image_h / image_w) > 1:
+            return MAX_RENDER_OUT_SIDE / (image_h / horizontal_pieces_count + 2 * crop_delta)
+        else:
+            return MAX_RENDER_OUT_SIDE / (image_w / vertical_pieces_count + 2 * crop_delta)
 
 
 if __name__ == '__main__':
