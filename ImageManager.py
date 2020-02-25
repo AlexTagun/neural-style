@@ -46,36 +46,43 @@ class ImageManager:
         # shutil.rmtree(self.save_path)
         self.cut_vertical()
         self.cut_horizontal()
+        images_arr = []
+        width_arr = []
+        out_arr = []
+
         for i in range(0, self.vertical_pieces_count):
             for j in range(0, self.horizontal_pieces_count):
+
                 path = self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                     i) + "_" + str(j) + ".png"
+                images_arr.append(path)
                 output_path = self.save_path + self.folder_name + "-" + str(i) + "/" + self.folder_name + "-" + str(
                     i) + "_" + str(j) + "_rendered.png"
+                out_arr.append(output_path)
                 width = Image.open(path).size[0]
                 out_w = round(width * self.scale_factor)
+                width_arr.append(out_w)
 
                 Data.save_step(Data.get_step() + 1)
-                self.render(path, output_path, out_w, self.callback)
+        self.render(images_arr, width_arr, out_arr, self.callback)
         self.add_alpha_horizontal()
         self.concat_horizontal()
         self.add_alpha_vertical()
         self.concat_vertical()
         # shutil.rmtree(self.save_path)
 
-
-    def render(self, path, output_path, width, callback):
+    def render(self, images_arr, width_arr, out_arr, callback):
         options = type('Anonymous options', (object,), {
-            "content": path,
+            "content": images_arr,
             "styles": [self.style_path],
-            "output": output_path,
+            "output": out_arr,
             "iterations": self.iterations,
             "overwrite": True,
 
             "network": 'imagenet-vgg-verydeep-19.mat',
             "checkpoint_iterations": None,
             "checkpoint_output": None,
-            "width": width,
+            "width": width_arr,
             "style_scales": None,
             "style_blend_weights": None,
             "initial": None,
