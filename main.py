@@ -90,7 +90,14 @@ def count_splits(orig_w, orig_h, out_w):
     ratio = orig_h / orig_w
     out_h = out_w * ratio
     scale_factor = out_w / orig_w
+    max_side_with_delta = MAX_RENDER_OUT_SIDE
+
+    first_h_count = math.ceil(out_w / max_side_with_delta)
+    piece_content_w = orig_w / first_h_count
+    ImageManager.crop_delta = round(piece_content_w / 4)
+
     max_side_without_delta = MAX_RENDER_OUT_SIDE - ImageManager.crop_delta * scale_factor * 2
+
     print("Resulting max side including delta: " + str(max_side_without_delta))
     if max_side_without_delta < 0:
         raise ValueError("Too big scale with too small max side")
