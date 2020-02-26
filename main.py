@@ -124,7 +124,7 @@ layout = [
     [sg.Text('max side', size=(10, 1)), sg.InputText(max_side, key='max_side')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
     [sg.Text('...', size=(59, 2), justification='left', key='log')],
-    [sg.Button('Start', focus=True), sg.Button('Continue', focus=False, visible=True, key='continue')]]
+    [sg.Button('Start', focus=True)]]
 
 window = sg.Window('Стилизатор 30000', layout)
 
