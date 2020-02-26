@@ -112,6 +112,7 @@ image_path = user_data.image_path
 style_path = user_data.style_path
 out_width = user_data.width
 iterations = user_data.iterations
+max_side = user_data.max_side
 
 sg.theme('Light Blue 2')
 
@@ -120,6 +121,7 @@ layout = [
     [sg.Text('style path', size=(10, 1)), sg.Input(style_path, key='style_path'), sg.FileBrowse()],
     [sg.Text('width', size=(10, 1)), sg.InputText(out_width, key='width')],
     [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations, key='iterations')],
+    [sg.Text('max side', size=(10, 1)), sg.InputText(max_side, key='max_side')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
     [sg.Text('...', size=(59, 2), justification='left', key='log')],
     [sg.Button('Start', focus=True), sg.Button('Continue', focus=False, visible=True, key='continue')]]
@@ -151,10 +153,14 @@ if __name__ == "__main__":
 
             out_width_str = values['width']
             iterations_str = values['iterations']
+            max_side_str = values['max_side']
             out_width = int(out_width_str)
             iterations = int(iterations_str)
+            max_side = int(max_side_str)
 
-            Data.save_user_data(image_path, style_path, out_width, iterations)
+            Data.save_user_data(image_path, style_path, out_width, iterations, max_side)
+
+            MAX_RENDER_OUT_SIDE = max_side
 
             image_w, image_h = image.size
             try:
