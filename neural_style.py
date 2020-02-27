@@ -175,6 +175,7 @@ def stylyze(options, callback):
             new_shape = (int(math.floor(float(content_image.shape[0]) /
                     content_image.shape[1] * width)), width)
             content_image = scipy.misc.imresize(content_image, new_shape)
+            content_image_arr[i] = content_image
         target_shape = content_image.shape
         for j in range(len(style_images)):
             style_scale = STYLE_SCALE
