@@ -94,7 +94,7 @@ def count_splits(orig_w, orig_h, out_w):
 
     first_h_count = math.ceil(out_w / max_side_with_delta)
     piece_content_w = orig_w / first_h_count
-    ImageManager.crop_delta = round(piece_content_w / 4)
+    ImageManager.crop_delta = math.ceil(piece_content_w / 6)
 
     print("Resulting crop delta: " + str(ImageManager.crop_delta))
 
