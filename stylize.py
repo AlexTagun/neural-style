@@ -58,6 +58,7 @@ def stylize(initial, content, preserve_colors, iterations,
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
     # make stylized image using backpropogation
+    tf.reset_default_graph()
     with tf.Graph().as_default():
         if initial is None:
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
