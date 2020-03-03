@@ -2,7 +2,6 @@ import os
 
 from PIL import Image
 
-import Data
 import neural_style as Stylist
 
 
