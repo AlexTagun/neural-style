@@ -30,8 +30,8 @@ def print_progress(loss_vals):
 
 def stylize(initial, content, preserve_colors, iterations,
             content_weight, content_weight_blend, tv_weight,
-            learning_rate, beta1, beta2, epsilon, pooling, initial_content_noise_coeff, g,
-            vgg_weights, vgg_mean_pixel, content_features, style_features,
+            learning_rate, beta1, beta2, epsilon, pooling, initial_content_noise_coeff,
+            vgg_weights, vgg_mean_pixel, style_features,
             style_images, style_layers_weights, style_weight, style_blend_weights,
             print_iterations=None, checkpoint_iterations=None, callback=None):
     """
@@ -49,7 +49,9 @@ def stylize(initial, content, preserve_colors, iterations,
     """
     shape = (1,) + content.shape
 
+    content_features = {}
     # compute content features in feedforward mode
+    g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
@@ -58,7 +60,6 @@ def stylize(initial, content, preserve_colors, iterations,
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
     # make stylized image using backpropogation
-    tf.reset_default_graph()
     with tf.Graph().as_default():
         if initial is None:
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)

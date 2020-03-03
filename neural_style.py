@@ -211,7 +211,6 @@ def stylyze(options, callback):
     vgg_weights, vgg_mean_pixel = vgg.load_net(options.network)
 
     style_shapes = [(1,) + style.shape for style in style_images]
-    content_features = {}
     style_features = [{} for _ in style_images]
 
     layer_weight = 1.0
@@ -226,8 +225,6 @@ def stylyze(options, callback):
         layer_weights_sum += style_layers_weights[style_layer]
     for style_layer in STYLE_LAYERS:
         style_layers_weights[style_layer] /= layer_weights_sum
-
-    g = tf.Graph()
 
     # compute style features in feedforward mode
     for i in range(len(style_images)):
@@ -265,10 +262,8 @@ def stylyze(options, callback):
             style_layers_weights=style_layers_weights,
             style_weight=options.style_weight,
             style_blend_weights=style_blend_weights,
-            g=g,
             vgg_weights=vgg_weights,
             vgg_mean_pixel=vgg_mean_pixel,
-            content_features=content_features,
             style_features=style_features,
             print_iterations=options.print_iterations,
             checkpoint_iterations=options.checkpoint_iterations,
