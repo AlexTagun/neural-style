@@ -63,7 +63,6 @@ class ImageManager:
                 out_w = round(width * self.scale_factor)
                 width_arr.append(out_w)
 
-                Data.save_step(Data.get_step() + 1)
         self.render(images_arr, width_arr, out_arr, self.callback)
         self.add_alpha_horizontal()
         self.concat_horizontal()

@@ -244,6 +244,7 @@ def stylyze(options, callback):
     initial_content_noise_coeff = 1.0 - options.initial_noiseblend
 
     for i in range(len(content_image_arr)):
+        Data.save_step(Data.get_step() + 1)
         loss_arrs = None
         for iteration, image, loss_vals in stylize(
             initial=initial_arr[i],
