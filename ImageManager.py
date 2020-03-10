@@ -18,7 +18,7 @@ class ImageManager:
     crop_delta = 50
 
     def __init__(self, original_path, style_path, vertical_pieces_count, horizontal_pieces_count,
-                 iterations, out_width, callback):
+                 iterations, out_width, style_layer_weight_exp, content_weight_blend, callback):
         self.work_folder_path = "Cash"
         dir = os.path.join(self.work_folder_path)
         if not os.path.exists(dir):
@@ -29,6 +29,8 @@ class ImageManager:
         self.vertical_pieces_count = vertical_pieces_count
         self.horizontal_pieces_count = horizontal_pieces_count
         self.iterations = iterations
+        self.style_layer_weight_exp = style_layer_weight_exp
+        self.content_weight_blend = content_weight_blend
         self.folder_name = self.original_name.split(".")[0]
         dir = os.path.join(self.work_folder_path, self.folder_name)
         if not os.path.exists(dir):
@@ -42,7 +44,6 @@ class ImageManager:
         self.alpha_delta = round(self.crop_delta * self.scale_factor)
 
     def start(self):
-        # shutil.rmtree(self.save_path)
         self.cut_vertical()
         self.cut_horizontal()
         images_arr = []
@@ -67,7 +68,6 @@ class ImageManager:
         self.concat_horizontal()
         self.add_alpha_vertical()
         self.concat_vertical()
-        # shutil.rmtree(self.save_path)
 
     def render(self, images_arr, width_arr, out_arr, callback):
         options = type('Anonymous options', (object,), {
@@ -87,9 +87,9 @@ class ImageManager:
             "initial_noiseblend": 0,
             "preserve_colors": None,
             "content_weight": 5e0,
-            "content_weight_blend": 1,
+            "content_weight_blend": self.content_weight_blend,
             "style_weight": 5e2,
-            "style_layer_weight_exp": 1,
+            "style_layer_weight_exp": self.style_layer_weight_exp,
             "tv_weight": 1e2,
             "learning_rate": 1e1,
             "beta1": 0.9,

@@ -44,7 +44,7 @@ class Progress:
 
 class ImageRendererThread(Thread):
     def __init__(self, original_path, style_path, vertical_pieces_count, horizontal_pieces_count,
-                 iterations, out_width, callback):
+                 iterations, out_width, style_layer_weight_exp, content_weight_blend, callback):
         Thread.__init__(self)
         self.name = "ImageRenderer"
         self.imageManager = ImageManager(
@@ -54,6 +54,8 @@ class ImageRendererThread(Thread):
             horizontal_pieces_count,
             iterations,
             out_width,
+            style_layer_weight_exp,
+            content_weight_blend,
             callback
         )
 
@@ -86,7 +88,6 @@ class ImageRendererThread(Thread):
 
 
 def count_splits(orig_w, orig_h, out_w):
-
     ratio = orig_h / orig_w
     out_h = out_w * ratio
     scale_factor = out_w / orig_w
@@ -113,6 +114,8 @@ style_path = user_data.style_path
 out_width = user_data.width
 iterations = user_data.iterations
 max_side = user_data.max_side
+style_layer_weight_exp = user_data.style_layer_weight_exp
+content_weight_blend = user_data.content_weight_blend
 
 sg.theme('Light Blue 2')
 
@@ -122,12 +125,14 @@ layout = [
     [sg.Text('width', size=(10, 1)), sg.InputText(out_width, key='width')],
     [sg.Text('iterations', size=(10, 1)), sg.InputText(iterations, key='iterations')],
     [sg.Text('max side', size=(10, 1)), sg.InputText(max_side, key='max_side')],
+    [sg.Text('style_layer_weight_exp', size=(10, 1)),
+     sg.InputText(style_layer_weight_exp, key='style_layer_weight_exp')],
+    [sg.Text('content_weight_blend', size=(10, 1)), sg.InputText(content_weight_blend, key='content_weight_blend')],
     [sg.ProgressBar(1000, orientation='h', size=(20, 20), key='progbar')],
     [sg.Text('...', size=(59, 2), justification='left', key='log')],
     [sg.Button('Start', focus=True)]]
 
 window = sg.Window('Стилизатор 30000', layout)
-
 
 if __name__ == "__main__":
     imageRenderer = None
@@ -157,8 +162,11 @@ if __name__ == "__main__":
             out_width = int(out_width_str)
             iterations = int(iterations_str)
             max_side = int(max_side_str)
+            style_layer_weight_exp = float(values['style_layer_weight_exp'])
+            content_weight_blend = float(values['content_weight_blend'])
 
-            Data.save_user_data(image_path, style_path, out_width, iterations, max_side)
+            Data.save_user_data(image_path, style_path, out_width, iterations, max_side, style_layer_weight_exp,
+                                content_weight_blend)
 
             MAX_RENDER_OUT_SIDE = max_side
 
@@ -169,7 +177,8 @@ if __name__ == "__main__":
                 window['log'].update(e.args[0])
                 continue
 
-            progress = Progress(window['progbar'], window['log'], iterations, vertical_pieces_count * horizontal_pieces_count)
+            progress = Progress(window['progbar'], window['log'], iterations,
+                                vertical_pieces_count * horizontal_pieces_count)
             imageRenderer = ImageRendererThread(
                 image_path,
                 style_path,
@@ -177,6 +186,8 @@ if __name__ == "__main__":
                 horizontal_pieces_count,
                 iterations,
                 out_width,
+                style_layer_weight_exp,
+                content_weight_blend,
                 progress.update
             )
 
